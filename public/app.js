@@ -197,7 +197,7 @@
     }
 
     // 2. VK Video (vk.com / vkvideo.ru)
-    if (host.includes('vk.com') || host.includes('vkvideo.ru')) {
+    if (host.includes('vk.com') || host.includes('vk.ru') || host.includes('vkvideo.ru')) {
       if (parsed.pathname.includes('video_ext.php')) {
         parsed.searchParams.set('js_api', '1');
         return {
@@ -207,7 +207,7 @@
           rawUrl: urlStr
         };
       }
-      const match = urlStr.match(/video(-?\d+)_(\d+)/);
+      const match = urlStr.match(/video(-?\d+)_(\d+)/i);
       if (match) {
         const oid = match[1];
         const id = match[2];
