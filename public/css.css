@@ -1,0 +1,1242 @@
+/* ==========================================================================
+   1. ДИЗАЙН-ТОКЕНЫ И СБРОС СТИЛЕЙ
+   ========================================================================== */
+:root {
+  --bg-deep-blue: #0a0e27;
+  --bg-deep-purple: #1a0b2e;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-hover: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.11);
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+
+  --accent: #f5a623;
+  --accent-hover: #ffb84d;
+  --accent-glow: rgba(245, 166, 35, 0.35);
+  --accent-subtle: rgba(245, 166, 35, 0.14);
+  --text-on-accent: #0a0e27;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --danger: #ff6b6b;
+  --warning-bg: rgba(245, 166, 35, 0.16);
+
+  --radius-btn: 12px;
+  --radius-card: 20px;
+  --radius-panel: 24px;
+
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition-fast: all 0.2s ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100dvh;
+  font-family: var(--font-main);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 10% 15%, rgba(245, 166, 35, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 90% 85%, rgba(124, 58, 237, 0.22) 0%, transparent 45%),
+    linear-gradient(135deg, var(--bg-deep-blue) 0%, var(--bg-deep-purple) 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Доступный фокус на всех интерактивных элементах */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   2. ПЛАВАЮЩИЕ ФОНОВЫЕ СФЕРЫ И GLASSMORPHISM
+   ========================================================================== */
+.bg-Canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(85px);
+  opacity: 0.45;
+  animation: floatOrb 22s infinite alternate ease-in-out;
+}
+
+.orb-1 {
+  width: 360px;
+  height: 360px;
+  background: rgba(245, 166, 35, 0.22);
+  top: -80px;
+  left: -80px;
+}
+
+.orb-2 {
+  width: 440px;
+  height: 440px;
+  background: rgba(139, 92, 246, 0.25);
+  bottom: -120px;
+  right: -100px;
+  animation-delay: -7s;
+}
+
+.orb-3 {
+  width: 280px;
+  height: 280px;
+  background: rgba(56, 189, 248, 0.16);
+  top: 45%;
+  left: 55%;
+  animation-delay: -14s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+  100% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ==========================================================================
+   3. ЭКРАН ВХОДА / СОЗДАНИЯ КОМНАТЫ
+   ========================================================================== */
+.auth-screen {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius-card);
+  padding: 2rem 1.75rem;
+}
+
+.brand-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.brand-logo {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 0.85rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), #ff7b00);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.brand-title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+}
+
+.brand-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Вкладки переключения с плавным ползунком */
+.auth-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(10, 14, 39, 0.55);
+  border-radius: var(--radius-btn);
+  padding: 4px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--glass-border);
+}
+
+.auth-tab {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.65rem 0.5rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border-radius: 9px;
+}
+
+.auth-tab.active {
+  color: var(--text-primary);
+}
+
+.auth-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: rgba(245, 166, 35, 0.2);
+  border: 1px solid rgba(245, 166, 35, 0.5);
+  border-radius: 9px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.auth-tabs[data-active="join"] .auth-tab-indicator {
+  transform: translateX(100%);
+}
+
+/* Поля ввода и кнопки */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(10, 14, 39, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-btn);
+  padding: 0.75rem 0.95rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: var(--transition-fast);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.input-with-action {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon-secondary {
+  min-width: 46px;
+  min-height: 46px;
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-icon-secondary:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 0.8rem 1.25rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 6px 20px rgba(245, 166, 35, 0.28);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(245, 166, 35, 0.42);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ==========================================================================
+   4. ЭКРАН КОМНАТЫ — ДЕСКТОП (>1024px)
+   ========================================================================== */
+.room-screen {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  padding: 20px;
+  height: 100dvh;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.video-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Верхняя панель: ссылка на видео + статус комнаты */
+.top-bar {
+  border-radius: var(--radius-card);
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.url-bar-form {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.url-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.url-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.url-input {
+  padding-left: 2.35rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  font-size: 0.875rem;
+}
+
+.btn-load {
+  padding: 0.6rem 1.15rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.room-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.source-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge-source {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid rgba(245, 166, 35, 0.35);
+}
+
+.badge-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--warning-bg);
+  color: #fcd34d;
+  border: 1px solid rgba(252, 211, 77, 0.3);
+}
+
+.room-credentials {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cred-pill {
+  font-size: 0.8125rem;
+  background: rgba(10, 14, 39, 0.55);
+  border: 1px solid var(--glass-border);
+  padding: 0.3rem 0.65rem;
+  border-radius: 10px;
+  color: var(--text-secondary);
+}
+
+.cred-pill strong {
+  color: var(--text-primary);
+  margin-left: 0.25rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.btn-glass-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-primary);
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-glass-sm:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   5. ПЛЕЕР (16:9) И ПАНЕЛЬ УПРАВЛЕНИЯ ВИДЕО
+   ========================================================================== */
+.player-stage {
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-panel);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(6, 9, 25, 0.75);
+}
+
+.video-aspect-box {
+  position: relative;
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+}
+
+.player-layer,
+.video-aspect-box iframe,
+.video-aspect-box video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  max-width: 100%;
+}
+
+/* Панель управления под видео */
+.video-controls {
+  border-radius: var(--radius-card);
+  padding: 0.75rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-play-circle {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.btn-play-circle:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 22px var(--accent-glow);
+}
+
+.btn-play-circle:active {
+  transform: scale(0.96);
+}
+
+.timeline-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.progress-wrapper {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress-wrapper.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  transition: height 0.15s ease;
+}
+
+.progress-wrapper:hover .progress-track {
+  height: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #ff7b00);
+  border-radius: 999px;
+  position: relative;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.progress-wrapper:hover .progress-thumb,
+.progress-wrapper:focus-visible .progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.time-readout {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.time-sep {
+  margin: 0 0.2rem;
+  color: var(--text-muted);
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-icon-glass {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-icon-glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-icon-glass:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   6. ПАНЕЛЬ ЧАТА И ИНДИКАТОР УЧАСТНИКОВ
+   ========================================================================== */
+.chat-column {
+  border-radius: var(--radius-panel);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.chat-header-title h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.online-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+/* Аватары участников в ряд */
+.participants-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid var(--bg-deep-blue);
+  margin-left: -8px;
+  position: relative;
+  cursor: default;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.avatar-circle:first-child {
+  margin-left: 0;
+}
+
+.avatar-circle:hover {
+  transform: translateY(-3px);
+  z-index: 5;
+}
+
+/* Тултип при наведении на аватар */
+.avatar-circle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  background: rgba(10, 14, 39, 0.95);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  padding: 0.25rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: var(--transition-fast);
+}
+
+.avatar-circle:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Лента сообщений */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  scroll-behavior: smooth;
+}
+
+.chat-welcome {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--glass-border);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+  max-width: 88%;
+}
+
+.msg-row.own {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.msg-bubble {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px 16px 16px 4px;
+  padding: 0.6rem 0.85rem;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.msg-row.own .msg-bubble {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.45);
+  border-radius: 16px 16px 4px 16px;
+}
+
+.msg-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.msg-sender {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.msg-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.msg-text {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+/* Поле ввода сообщения */
+.chat-input-bar {
+  padding: 0.75rem;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(10, 14, 39, 0.65);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-btn);
+  padding: 0.65rem 0.9rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: var(--transition-fast);
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.btn-send {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: var(--radius-btn);
+  border: none;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-send:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.btn-send:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   7. УВЕДОМЛЕНИЯ (ТОСТЫ)
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 340px;
+  width: calc(100% - 40px);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  background: rgba(15, 20, 48, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  animation: toastIn 0.25s ease forwards;
+}
+
+.toast.toast-error {
+  border-color: var(--danger);
+}
+
+.toast-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+  display: flex;
+}
+
+.toast.toast-error .toast-icon {
+  color: var(--danger);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Скрываем мобильные элементы на десктопе и планшете */
+.mobile-segmented-control,
+.mobile-room-panel {
+  display: none;
+}
+
+/* ==========================================================================
+   8. АДАПТИВНОСТЬ: ПЛАНШЕТ (768px – 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .room-screen {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100dvh;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .player-stage {
+    flex: none;
+  }
+
+  .chat-column {
+    max-height: 400px;
+    height: 400px;
+  }
+}
+
+/* ==========================================================================
+   9. АДАПТИВНОСТЬ: МОБИЛЬНЫЕ УСТРОЙСТВА (<768px, включая 320px)
+   ========================================================================== */
+@media (max-width: 767px) {
+  .toast-container {
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+  }
+
+  .auth-card {
+    padding: 1.5rem 1.15rem;
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .room-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  /* Прячем десктопную верхнюю панель (перенесена во вкладку «Комната») */
+  #desktop-room-bar {
+    display: none;
+  }
+
+  .video-column {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .player-stage {
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  .video-aspect-box {
+    border-radius: 12px;
+  }
+
+  /* Компактная панель управления с крупными кнопками >=44x44px */
+  .video-controls {
+    padding: 0.5rem 0.65rem;
+    gap: 0.55rem;
+    border-radius: 16px;
+  }
+
+  .btn-play-circle,
+  .btn-icon-glass {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .time-readout {
+    font-size: 0.75rem;
+  }
+
+  /* Сегментированный переключатель «Чат» / «Комната» */
+  .mobile-segmented-control {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    padding: 4px;
+    border-radius: 14px;
+    background: rgba(10, 14, 39, 0.7);
+  }
+
+  .mob-seg-btn {
+    position: relative;
+    z-index: 2;
+    min-height: 40px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .mob-seg-btn.active {
+    color: var(--text-primary);
+  }
+
+  .mob-seg-slider {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 10px;
+    background: rgba(245, 166, 35, 0.22);
+    border: 1px solid rgba(245, 166, 35, 0.5);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+
+  .mobile-segmented-control[data-mob-active="room"] .mob-seg-slider {
+    transform: translateX(100%);
+  }
+
+  .unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* Вкладка «Чат» на мобильном */
+  .chat-column {
+    flex: 1;
+    max-height: none;
+    height: auto;
+    min-height: 0;
+    border-radius: 18px;
+  }
+
+  .chat-header {
+    padding: 0.6rem 0.85rem;
+  }
+
+  .chat-input-bar {
+    position: sticky;
+    bottom: 0;
+    padding: 0.55rem;
+    padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+  }
+
+  .btn-send {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Вкладка «Комната» на мобильном */
+  .mobile-room-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.9rem;
+    border-radius: 18px;
+  }
+
+  .room-screen[data-mobile-view="room"] .video-column {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .room-screen[data-mobile-view="room"] #chat-column {
+    display: none;
+  }
+
+  .mob-room-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .mob-section-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .mob-cred-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .mob-cred-box {
+    background: rgba(10, 14, 39, 0.6);
+    padding: 0.5rem 0.65rem;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cred-value {
+    font-family: monospace;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+
+  .mob-url-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .mob-source-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+
+  .mob-participants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .mob-user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 0.8125rem;
+  }
+}
+
+/* Особо узкие экраны (320px) */
+@media (max-width: 360px) {
+  .time-readout {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   10. ДОСТУПНОСТЬ: ОТКЛЮЧЕНИЕ АНИМАЦИЙ (prefers-reduced-motion)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

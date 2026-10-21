@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Watch Party — Совместный просмотр видео</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Анимированный фоновый декор -->
+  <div class="bg-Canvas" aria-hidden="true">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <!-- Контейнер всплывающих уведомлений (Тосты) -->
+  <div id="toast-container" class="toast-container" role="region" aria-live="polite" aria-label="Уведомления"></div>
+
+  <!-- ================= ЭКРАН 1: ВХОД / СОЗДАНИЕ КОМНАТЫ ================= -->
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-card glass-panel" aria-labelledby="app-title">
+      <div class="brand-header">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82z" fill="currentColor"/>
+          </svg>
+        </div>
+        <h1 id="app-title" class="brand-title">Watch Party</h1>
+        <p class="brand-subtitle">Синхронный просмотр видео и общение с друзьями в реальном времени</p>
+      </div>
+
+      <!-- Вкладки Создать / Войти -->
+      <div class="auth-tabs" role="tablist" aria-label="Режим входа">
+        <button id="tab-create" class="auth-tab active" role="tab" aria-selected="true" aria-controls="form-create" data-tab="create" type="button">
+          Создать комнату
+        </button>
+        <button id="tab-join" class="auth-tab" role="tab" aria-selected="false" aria-controls="form-join" data-tab="join" type="button">
+          Войти в комнату
+        </button>
+        <div class="auth-tab-indicator" id="auth-tab-indicator"></div>
+      </div>
+
+      <!-- Форма создания комнаты -->
+      <form id="form-create" class="auth-form" autocomplete="off">
+        <div class="form-group">
+          <label for="create-username" class="form-label">Ваше имя</label>
+          <div class="input-wrapper">
+            <input type="text" id="create-username" class="form-input" placeholder="Например, Алекс" maxlength="24" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="create-password" class="form-label">Пароль комнаты</label>
+          <div class="input-with-action">
+            <input type="text" id="create-password" class="form-input" placeholder="Свой или сгенерируйте" maxlength="32" required />
+            <button type="button" id="btn-generate-pass" class="btn-icon-secondary" aria-label="Сгенерировать случайный пароль" title="Сгенерировать пароль">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="form-hint">Нажмите на иконку кубика для автогенерации</span>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full">
+          <span>Создать и войти</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Форма входа в комнату -->
+      <form id="form-join" class="auth-form hidden" autocomplete="off">
+        <div class="form-group">
+          <label for="join-username" class="form-label">Ваше имя</label>
+          <input type="text" id="join-username" class="form-input" placeholder="Например, Мария" maxlength="24" required />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="join-room-id" class="form-label">ID комнаты (6 симв.)</label>
+            <input type="text" id="join-room-id" class="form-input text-uppercase" placeholder="A1B2C3" maxlength="6" required />
+          </div>
+          <div class="form-group">
+            <label for="join-password" class="form-label">Пароль</label>
+            <input type="password" id="join-password" class="form-input" placeholder="••••••" maxlength="32" required />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full">
+          <span>Присоединиться</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ================= ЭКРАН 2: КОМНАТА ПРОСМОТРА ================= -->
+  <div id="room-screen" class="room-screen hidden">
+    <!-- ЛЕВАЯ КОЛОНКА: ПЛЕЕР + УПРАВЛЕНИЕ + ИНФО О КОМНАТЕ -->
+    <div class="video-column">
+      <!-- Верхняя панель: загрузка ссылки и статус источника (скрывается на мобильных во вкладку «Комната») -->
+      <header class="top-bar glass-panel" id="desktop-room-bar">
+        <form id="video-url-form" class="url-bar-form">
+          <div class="url-input-wrap">
+            <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <input
+              type="url"
+              id="video-url-input"
+              class="form-input url-input"
+              placeholder="Вставьте ссылку YouTube, VK Video, Rutube или прямую ссылку .mp4 / .webm"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary btn-load">Загрузить</button>
+        </form>
+
+        <!-- Инфо о комнате и источнике для десктопа/планшета -->
+        <div class="room-meta-bar">
+          <div class="source-status">
+            <span class="badge-source" id="source-badge">YouTube</span>
+            <span class="badge-warning hidden" id="source-limitation-badge" title="Плеер ограничивает внешнее управление перемоткой">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span id="source-limitation-text">Перемотка недоступна</span>
+            </span>
+          </div>
+
+          <div class="room-credentials">
+            <div class="cred-pill" title="ID комнаты">
+              <span class="cred-label">ID:</span>
+              <strong id="display-room-id">------</strong>
+            </div>
+            <div class="cred-pill" title="Пароль комнаты">
+              <span class="cred-label">Пароль:</span>
+              <strong id="display-room-pass">••••••</strong>
+            </div>
+            <button type="button" id="btn-copy-invite" class="btn-glass-sm" aria-label="Скопировать приглашение в комнату">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Пригласить</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Контейнер видеоплеера 16:9 -->
+      <section class="player-stage glass-panel" id="player-stage" aria-label="Видеоплеер">
+        <div class="video-aspect-box">
+          <!-- Контейнер для YouTube IFrame API -->
+          <div id="youtube-player-mount" class="player-layer"></div>
+
+          <!-- Контейнер для VK Video / Rutube iframe -->
+          <iframe
+            id="embed-iframe-player"
+            class="player-layer hidden"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+            title="Встроенный видеоплеер"
+          ></iframe>
+
+          <!-- Прямой HTML5 плеер для MP4/WebM -->
+          <video
+            id="html5-video-player"
+            class="player-layer hidden"
+            playsinline
+            preload="metadata"
+          ></video>
+        </div>
+      </section>
+
+      <!-- Стеклянная панель управления видео -->
+      <section class="video-controls glass-panel" aria-label="Панель управления воспроизведением">
+        <button type="button" id="btn-play-pause" class="btn-play-circle" aria-label="Воспроизвести или поставить на паузу">
+          <!-- Иконка Play -->
+          <svg id="icon-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5.14v14l11-7-11-7z" />
+          </svg>
+          <!-- Иконка Pause -->
+          <svg id="icon-pause" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+
+        <!-- Прогресс-бар и таймкод -->
+        <div class="timeline-container">
+          <div class="progress-wrapper" id="progress-wrapper" role="slider" aria-label="Позиция воспроизведения" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-fill"></div>
+              <div class="progress-thumb" id="progress-thumb"></div>
+            </div>
+          </div>
+          <div class="time-readout">
+            <span id="time-current">00:00</span>
+            <span class="time-sep">/</span>
+            <span id="time-duration">00:00</span>
+          </div>
+        </div>
+
+        <!-- Правый блок кнопок пульта -->
+        <div class="controls-right">
+          <button type="button" id="btn-resync" class="btn-icon-glass" aria-label="Синхронизировать с комнатой" title="Синхронизировать время">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+
+          <button type="button" id="btn-copy-room-quick" class="btn-icon-glass" aria-label="Скопировать ссылку на комнату" title="Скопировать ссылку на комнату">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+
+          <button type="button" id="btn-fullscreen" class="btn-icon-glass" aria-label="Полный экран" title="Во весь экран">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- МОБИЛЬНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ВКЛАДОК: «Чат» / «Комната» (<768px) -->
+      <div class="mobile-segmented-control glass-panel" role="tablist" aria-label="Переключение разделов комнаты">
+        <button type="button" id="mob-tab-chat" class="mob-seg-btn active" role="tab" aria-selected="true" data-mob-tab="chat">
+          <span>Чат</span>
+          <span id="mob-unread-badge" class="unread-dot hidden"></span>
+        </button>
+        <button type="button" id="mob-tab-room" class="mob-seg-btn" role="tab" aria-selected="false" data-mob-tab="room">
+          <span>Комната</span>
+        </button>
+        <div class="mob-seg-slider" id="mob-seg-slider"></div>
+      </div>
+
+      <!-- МОБИЛЬНАЯ ВКЛАДКА «КОМНАТА» (<768px) -->
+      <section id="mobile-room-panel" class="mobile-room-panel glass-panel hidden" aria-label="Информация о комнате">
+        <div class="mob-room-card">
+          <h2 class="mob-section-title">Данные комнаты</h2>
+          <div class="mob-cred-grid">
+            <div class="mob-cred-box">
+              <span class="cred-label">ID Комнаты</span>
+              <strong id="mob-display-room-id" class="cred-value">------</strong>
+            </div>
+            <div class="mob-cred-box">
+              <span class="cred-label">Пароль</span>
+              <strong id="mob-display-room-pass" class="cred-value">••••••</strong>
+            </div>
+          </div>
+          <button type="button" id="mob-btn-copy-invite" class="btn-primary btn-full">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Скопировать ссылку и пароль</span>
+          </button>
+        </div>
+
+        <div class="mob-room-card">
+          <h2 class="mob-section-title">Сменить видео</h2>
+          <form id="mob-video-url-form" class="mob-url-form">
+            <input
+              type="url"
+              id="mob-video-url-input"
+              class="form-input"
+              placeholder="Ссылка YouTube, VK, Rutube, MP4..."
+              required
+            />
+            <button type="submit" class="btn-primary btn-full">Загрузить видео</button>
+          </form>
+          <div class="mob-source-meta">
+            <span>Текущий источник: <strong id="mob-source-name">YouTube</strong></span>
+            <span id="mob-source-warning" class="badge-warning hidden">Перемотка недоступна</span>
+          </div>
+        </div>
+
+        <div class="mob-room-card">
+          <h2 class="mob-section-title">Участники онлайн (<span id="mob-users-count">1</span>)</h2>
+          <div id="mob-participants-list" class="mob-participants-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА: ЧАТ И УЧАСТНИКИ -->
+    <aside id="chat-column" class="chat-column glass-panel" aria-label="Чат комнаты">
+      <!-- Шапка чата с индикатором участников -->
+      <div class="chat-header">
+        <div class="chat-header-title">
+          <h2>Чат комнаты</h2>
+          <span class="online-counter"><span class="pulse-dot"></span><span id="users-count">1</span> онлайн</span>
+        </div>
+        <!-- Аватары участников в ряд с тултипами -->
+        <div id="participants-avatars" class="participants-avatars" aria-label="Участники комнаты"></div>
+      </div>
+
+      <!-- Прокручиваемая лента сообщений -->
+      <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">
+        <div class="chat-welcome">
+          <p>Добро пожаловать в Watch Party! Отправьте ссылку на комнату друзьям и начните совместный просмотр.</p>
+        </div>
+      </div>
+
+      <!-- Поле ввода сообщения -->
+      <form id="chat-form" class="chat-input-bar" autocomplete="off">
+        <input
+          type="text"
+          id="chat-input"
+          class="chat-input"
+          placeholder="Написать сообщение..."
+          maxlength="600"
+          aria-label="Текст сообщения"
+        />
+        <button type="submit" class="btn-send" aria-label="Отправить сообщение">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </aside>
+  </div>
+
+  <!-- Подключение Socket.IO, конфигурации и логики приложения -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
