@@ -14,7 +14,7 @@
     password: '',
     userId: null,
     username: '',
-    videoType: 'youtube', // 'youtube' | 'vk' | 'rutube' | 'direct'
+    videoType: 'youtube',
     videoId: '',
     embedUrl: '',
     rawUrl: '',
@@ -25,6 +25,7 @@
     ytPlayer: null,
     ytReady: false,
     pendingYtLoad: null,
+    vkPlayer: null,
     mobileTab: 'chat'
   };
 
@@ -44,7 +45,6 @@
     joinRoomId: document.getElementById('join-room-id'),
     joinPassword: document.getElementById('join-password'),
 
-    // Элементы комнаты
     videoUrlForm: document.getElementById('video-url-form'),
     videoUrlInput: document.getElementById('video-url-input'),
     mobVideoUrlForm: document.getElementById('mob-video-url-form'),
@@ -65,13 +65,11 @@
     btnCopyRoomQuick: document.getElementById('btn-copy-room-quick'),
     mobBtnCopyInvite: document.getElementById('mob-btn-copy-invite'),
 
-    // Плееры
     playerStage: document.getElementById('player-stage'),
     ytMount: document.getElementById('youtube-player-mount'),
     embedIframe: document.getElementById('embed-iframe-player'),
     html5Video: document.getElementById('html5-video-player'),
 
-    // Пульт управления
     btnPlayPause: document.getElementById('btn-play-pause'),
     iconPlay: document.getElementById('icon-play'),
     iconPause: document.getElementById('icon-pause'),
@@ -83,7 +81,6 @@
     btnResync: document.getElementById('btn-resync'),
     btnFullscreen: document.getElementById('btn-fullscreen'),
 
-    // Чат и участники
     usersCount: document.getElementById('users-count'),
     mobUsersCount: document.getElementById('mob-users-count'),
     participantsAvatars: document.getElementById('participants-avatars'),
@@ -92,7 +89,6 @@
     chatForm: document.getElementById('chat-form'),
     chatInput: document.getElementById('chat-input'),
 
-    // Мобильные вкладки
     mobSegmented: document.querySelector('.mobile-segmented-control'),
     mobTabChat: document.getElementById('mob-tab-chat'),
     mobTabRoom: document.getElementById('mob-tab-room'),
@@ -161,7 +157,7 @@
   }
 
   /* ========================================================================
-     2. ПАРСЕР ССЫЛОК НА ВИДЕО (YouTube, VK Video, Rutube, Direct MP4/WebM)
+     2. ПАРСЕР ССЫЛОК НА ВИДЕО
      ======================================================================== */
   function parseVideoUrl(rawInput) {
     const urlStr = String(rawInput || '').trim();
@@ -196,7 +192,7 @@
       }
     }
 
-    // 2. VK Video (vk.com / vkvideo.ru)
+    // 2. VK Video (vk.com / vk.ru / vkvideo.ru)
     if (host.includes('vk.com') || host.includes('vk.ru') || host.includes('vkvideo.ru')) {
       if (parsed.pathname.includes('video_ext.php')) {
         parsed.searchParams.set('js_api', '1');
@@ -234,7 +230,7 @@
       }
     }
 
-    // 4. Прямые видеофайлы (MP4 / WebM / Ogg)
+    // 4. Прямые видеофайлы
     if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(parsed.pathname)) {
       return {
         videoType: 'direct',
@@ -250,7 +246,6 @@
   /* ========================================================================
      3. ИНИЦИАЛИЗАЦИЯ И УПРАВЛЕНИЕ ВИДЕОПЛЕЕРАМИ
      ======================================================================== */
-  // Загрузка YouTube IFrame API
   function initYouTubeApi() {
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
@@ -295,7 +290,6 @@
     });
   };
 
-  // События прямого HTML5 видеоплеера
   function bindHtml5Events() {
     const video = dom.html5Video;
 
@@ -324,7 +318,22 @@
     });
   }
 
-  // Переключение и загрузка источника видео
+  // Инициализация VK-плеера через официальный API
+  function initVkPlayer() {
+    if (!window.VK || !window.VK.VideoPlayer) {
+      console.warn('VK.VideoPlayer API не загружен');
+      return;
+    }
+    if (!dom.embedIframe) return;
+    try {
+      appState.vkPlayer = window.VK.VideoPlayer(dom.embedIframe);
+      console.log('VK player initialized:', appState.vkPlayer);
+    } catch (e) {
+      console.warn('VK VideoPlayer init failed:', e);
+      appState.vkPlayer = null;
+    }
+  }
+
   function applyVideoState(state) {
     appState.videoType = state.videoType;
     appState.videoId = state.videoId || '';
@@ -336,7 +345,6 @@
     updateSourceBadges(state.videoType);
     updatePlayPauseIcons(appState.isPlaying);
 
-    // Останавливаем и скрываем неактивные плееры
     const ytIframeEl = document.getElementById('youtube-player-mount');
     ytIframeEl.classList.add('hidden');
     dom.embedIframe.classList.add('hidden');
@@ -350,6 +358,7 @@
     });
 
     if (state.videoType === 'youtube') {
+      appState.vkPlayer = null;
       ytIframeEl.classList.remove('hidden');
       if (!appState.ytReady) {
         appState.pendingYtLoad = state;
@@ -365,6 +374,7 @@
         }
       });
     } else if (state.videoType === 'direct') {
+      appState.vkPlayer = null;
       dom.html5Video.classList.remove('hidden');
       withSuppressedEmit(() => {
         dom.html5Video.src = state.embedUrl;
@@ -376,12 +386,19 @@
     } else if (state.videoType === 'vk' || state.videoType === 'rutube') {
       dom.embedIframe.classList.remove('hidden');
       if (dom.embedIframe.src !== state.embedUrl) {
+        appState.vkPlayer = null;
         dom.embedIframe.src = state.embedUrl;
+        if (state.videoType === 'vk') {
+          dom.embedIframe.onload = () => {
+            setTimeout(initVkPlayer, 800);
+          };
+        }
+      } else if (state.videoType === 'vk' && !appState.vkPlayer) {
+        initVkPlayer();
       }
     }
   }
 
-  // Применение команды синхронизации от другого участника
   function applyRemoteSync({ action, currentTime, isPlaying }) {
     appState.isPlaying = Boolean(isPlaying);
     appState.currentTime = Number(currentTime) || 0;
@@ -410,8 +427,23 @@
     });
   }
 
-  // Отправка postMessage в плеер VK Video
+  // VK: сначала официальный API, потом fallback на postMessage
   function sendVkCommand(action) {
+    if (appState.vkPlayer) {
+      try {
+        if (action === 'play' && typeof appState.vkPlayer.play === 'function') {
+          appState.vkPlayer.play();
+          return;
+        }
+        if (action === 'pause' && typeof appState.vkPlayer.pause === 'function') {
+          appState.vkPlayer.pause();
+          return;
+        }
+      } catch (e) {
+        console.warn('VK API error:', e);
+      }
+    }
+    // Fallback
     const win = dom.embedIframe.contentWindow;
     if (!win) return;
     if (action === 'play' || action === 'pause') {
@@ -419,7 +451,6 @@
     }
   }
 
-  // Отправка postMessage в плеер Rutube
   function sendRutubeCommand(action, time) {
     const win = dom.embedIframe.contentWindow;
     if (!win) return;
@@ -432,7 +463,6 @@
     }
   }
 
-  // Обновление бейджей источника и ограничений
   function updateSourceBadges(videoType) {
     const names = {
       youtube: 'YouTube',
@@ -446,7 +476,7 @@
 
     if (videoType === 'vk' || videoType === 'rutube') {
       const note = videoType === 'vk'
-        ? 'Перемотка недоступна'
+        ? 'Синхронизация VK ограничена'
         : 'Синхронизация ограничена';
       dom.sourceLimitationText.textContent = note;
       dom.sourceLimitationBadge.classList.remove('hidden');
@@ -478,7 +508,6 @@
     dom.timeDuration.textContent = formatTime(safeDur);
   }
 
-  // Периодическое обновление прогресс-бара
   setInterval(() => {
     if (appState.videoType === 'youtube' && appState.ytReady && appState.ytPlayer?.getCurrentTime) {
       const cur = appState.ytPlayer.getCurrentTime() || 0;
@@ -497,7 +526,6 @@
     }
   }, 250);
 
-  // Клик по круглой кнопке Play/Pause
   dom.btnPlayPause.addEventListener('click', () => {
     const nextAction = appState.isPlaying ? 'pause' : 'play';
     appState.isPlaying = !appState.isPlaying;
@@ -523,7 +551,6 @@
     socket.emit('sync-action', { action: nextAction, currentTime });
   });
 
-  // Перемотка кликом по прогресс-бару
   dom.progressWrapper.addEventListener('click', (e) => {
     if (appState.videoType === 'vk' || appState.videoType === 'rutube') {
       showToast('Для данного источника перемотка через панель ограничена', true);
@@ -547,7 +574,6 @@
     socket.emit('sync-action', { action: 'seek', currentTime: targetTime });
   });
 
-  // Кнопка ручной синхронизации
   dom.btnResync.addEventListener('click', () => {
     socket.emit('request-state', (serverState) => {
       if (!serverState) return;
@@ -560,7 +586,6 @@
     });
   });
 
-  // Полноэкранный режим
   dom.btnFullscreen.addEventListener('click', () => {
     if (!document.fullscreenElement) {
       dom.playerStage.requestFullscreen?.().catch(() => {});
@@ -582,7 +607,6 @@
     users.forEach((u) => {
       const initial = (u.username || '?').charAt(0).toUpperCase();
 
-      // Аватар в шапке чата
       const avatar = document.createElement('div');
       avatar.className = 'avatar-circle';
       avatar.style.background = u.color;
@@ -591,7 +615,6 @@
       avatar.textContent = initial;
       dom.participantsAvatars.appendChild(avatar);
 
-      // Чип участника в мобильной вкладке «Комната»
       const chip = document.createElement('div');
       chip.className = 'mob-user-chip';
       chip.innerHTML = `
@@ -626,7 +649,6 @@
     dom.chatMessages.appendChild(row);
     dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
 
-    // Индикатор непрочитанного сообщения, если открыта вкладка «Комната» на телефоне
     if (appState.mobileTab === 'room' && !isOwn) {
       dom.mobUnreadBadge.classList.remove('hidden');
     }
@@ -653,7 +675,6 @@
     dom.mobDisplayRoomId.textContent = response.roomId;
     dom.mobDisplayRoomPass.textContent = response.password;
 
-    // Обновляем URL без перезагрузки для удобного шаринга
     const newUrl = `${window.location.pathname}?room=${encodeURIComponent(response.roomId)}`;
     window.history.replaceState({}, '', newUrl);
 
@@ -665,7 +686,6 @@
     applyVideoState(response.state);
   }
 
-  // Переключение вкладок на экране входа
   function switchAuthTab(tabName) {
     const isCreate = tabName === 'create';
     dom.authTabsContainer.setAttribute('data-active', tabName);
@@ -680,13 +700,11 @@
   dom.tabCreate.addEventListener('click', () => switchAuthTab('create'));
   dom.tabJoin.addEventListener('click', () => switchAuthTab('join'));
 
-  // Кнопка генерации пароля
   dom.btnGeneratePass.addEventListener('click', () => {
     dom.createPassword.value = generateRandomPassword(6);
     showToast('Сгенерирован надёжный пароль');
   });
 
-  // Отправка формы «Создать комнату»
   dom.formCreate.addEventListener('submit', (e) => {
     e.preventDefault();
     const username = dom.createUsername.value.trim();
@@ -703,7 +721,6 @@
     });
   });
 
-  // Отправка формы «Войти в комнату»
   dom.formJoin.addEventListener('submit', (e) => {
     e.preventDefault();
     const username = dom.joinUsername.value.trim();
@@ -721,7 +738,6 @@
     });
   });
 
-  // Загрузка видео по ссылке (десктоп и мобильная форма)
   function handleVideoUrlSubmit(inputEl, e) {
     e.preventDefault();
     const raw = inputEl.value.trim();
@@ -732,6 +748,10 @@
       return;
     }
 
+    if (parsed.videoType === 'vk') {
+      showToast('VK Video: синхронизация play/pause может не работать (ограничение VK)', true);
+    }
+
     socket.emit('load-video', parsed);
     inputEl.value = '';
   }
@@ -739,7 +759,6 @@
   dom.videoUrlForm.addEventListener('submit', (e) => handleVideoUrlSubmit(dom.videoUrlInput, e));
   dom.mobVideoUrlForm.addEventListener('submit', (e) => handleVideoUrlSubmit(dom.mobVideoUrlInput, e));
 
-  // Копирование приглашения в буфер обмена
   function copyRoomInvite() {
     if (!appState.roomId) return;
     const link = `${window.location.origin}/?room=${appState.roomId}`;
@@ -755,7 +774,6 @@
   dom.btnCopyRoomQuick.addEventListener('click', copyRoomInvite);
   dom.mobBtnCopyInvite.addEventListener('click', copyRoomInvite);
 
-  // Переключение мобильных вкладок «Чат» / «Комната»
   function switchMobileTab(tab) {
     appState.mobileTab = tab;
     const isChat = tab === 'chat';
@@ -772,7 +790,6 @@
   dom.mobTabChat.addEventListener('click', () => switchMobileTab('chat'));
   dom.mobTabRoom.addEventListener('click', () => switchMobileTab('room'));
 
-  // Входящие события Socket.IO
   socket.on('user-joined', ({ user, users }) => {
     renderUsers(users);
     showToast(`${user.username} присоединился к комнате`);
@@ -796,7 +813,6 @@
     appendChatMessage(message);
   });
 
-  // Автозаполнение ID комнаты из URL (?room=ABCDEF) и стартового пароля
   function initApp() {
     dom.createPassword.value = generateRandomPassword(6);
     const params = new URLSearchParams(window.location.search);
